@@ -5,7 +5,9 @@ description = "Diffusion model, implemented for 14X050@unige"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "basedpyright>=1.40.2",
     "marimo>=0.25.2",
+    "matplotlib>=3.11.2",
     "torch>=2.15.0",
     "torchvision>=0.29.2",
 ]

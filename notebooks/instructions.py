@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.25.2"
-app = marimo.App()
+app = marimo.App(app_title="Diffusion model", auto_download=["html"])
 
 
 @app.cell
@@ -47,7 +47,7 @@ def _(mo):
     We have the following two processes:
 
     - **Noising process**: start from clean images, add noise until it is indistinguishable from pure noise.
-    - **Denoising process**: start from pure noise, iteratively denoiser until it looks like an actual image from the data distribution.
+    - **Denoising process**: start from pure noise, iteratively denoise until it looks like an actual image from the data distribution.
 
     The first one is straightforward, as we just have to degrade images. The second one is much more difficult, and our goal will be to train a neural network to achieve it.
     """)
@@ -96,7 +96,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    We are looking for a denoising function $D$ that returns the clean image given the noised image $D(x, \sigma) = y $. Note that $D$ is also taking the noise level $\sigma$.
+    We are looking for a denoising function $D$ that returns the clean image given the noised image $D(x, \sigma) = y$. Note that $D$ is also taking the noise level $\sigma$.
 
     We will thus *train* a parametric function $D_\theta$ with parameters $\theta$, with the following denoising MSE loss,
 
@@ -233,7 +233,8 @@ def _(math, plt, sample_sigma, torch):
     plt.subplot(212)
     logbins = torch.logspace(math.log(bins[0]), math.log(bins[-1]), steps=len(bins))
     plt.hist(_sigma.tolist(), bins=logbins)
-    plt.xscale('log')
+    plt.xscale("log")
+    plt.show()
     return
 
 
@@ -314,7 +315,7 @@ def _(mo):
 def _(build_sigma_schedule, plt):
     for rho in range(1, 10):
         _sigmas = build_sigma_schedule(steps=50, sigma_min=0.002, sigma_max=80, rho=rho)
-        plt.plot(_sigmas.tolist(), label=f'rho={rho}')
+        plt.plot(_sigmas.tolist(), label=f"rho={rho}")
     plt.legend()
     plt.show()
     return
@@ -351,8 +352,10 @@ def _(D, build_sigma_schedule, torch):
             x_denoised = D(x, _sigma)
         sigma_next = _sigmas[i + 1] if i < len(_sigmas) - 1 else 0
         d = (x - x_denoised) / _sigma
-    # -> Final `x` contains the sampled images (8 here)
-        x = x + d * (sigma_next - _sigma)  # Where D(x, sigma) = cskip(sigma) * x + cout(sigma) * F(cin(sigma) * x, cnoise(sigma))  # and F(.,.) is your neural network  # Perform one step of Euler's method
+        # -> Final `x` contains the sampled images (8 here)
+        x = (
+            x + d * (sigma_next - _sigma)
+        )  # Where D(x, sigma) = cskip(sigma) * x + cout(sigma) * F(cin(sigma) * x, cnoise(sigma))  # and F(.,.) is your neural network  # Perform one step of Euler's method
     return (x,)
 
 
@@ -368,6 +371,7 @@ def _(mo):
 def _(x):
     from PIL import Image
     from torchvision.utils import make_grid
+
     x_1 = x.clamp(-1, 1).add(1).div(2).mul(255).byte()
     x_1 = make_grid(x_1)  # [-1., 1.] -> [0., 1.] -> [0, 255]
     x_1 = Image.fromarray(x_1.permute(1, 2, 0).cpu().numpy())
@@ -427,7 +431,7 @@ def _(mo):
     - Find a way to plug this quantity in the model. You can try the first simple approaches that come to your mind.
     - Otherwise, a simple (and very effective) approach is to code a **conditional** BatchNorm2d mechanism, where you train a linear layer to map the condition (the noise level here) to the affine parameters of the batch norm. To that end, you should modify the default behavior of `nn.BatchNorm2d` by setting `affine=False` (deactivate learnable parameters of the module), and **add your own linear layer, to predict the affine parameters given the noise embedding**.
     - This should give you much better images (barely distinguishable from real images).
-    - Evaluate your generated images with FID to have a quantive measure of the improvement.
+    - Evaluate your generated images with FID to have a quantitative measure of the improvement.
     - You can also improve on the initialization of your model, for instance by initializing the weights of `conv2` (in residual blocks) and `conv_out` to zero.
 
     THIS IS ALREADY A GOOD PROJECT AT THIS STAGE!
@@ -473,14 +477,17 @@ def _(mo):
 
 @app.cell
 def _(torch):
-    from data import load_dataset_and_make_dataloaders
+    from diffusion.data import load_dataset_and_make_dataloaders
+
     gpu = torch.cuda.is_available()
-    device = torch.device('cuda:0' if gpu else 'cpu')
-    dl, info = load_dataset_and_make_dataloaders(dataset_name='FashionMNIST', root_dir='data', batch_size=32, num_workers=0, pin_memory=gpu)
+    device = torch.device("cuda:0" if gpu else "cpu")
+    dl, info = load_dataset_and_make_dataloaders(
+        dataset_name="FashionMNIST", root_dir="data", batch_size=32, num_workers=0, pin_memory=gpu
+    )
     print(info)
     for x_2, y in dl.train:
         print(x_2.shape)
-        print(y.shape)  # choose the directory to store the data 
+        print(y.shape)  # choose the directory to store the data
         break  # you can use more workers if you see the GPU is waiting for the batches  # use pin memory if you're planning to move the data to GPU
     return
 

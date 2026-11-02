@@ -1,3 +1,5 @@
+basedpyright>=1.40.2
 marimo>=0.25.2
+matplotlib>=3.11.2
 torch>=2.15.0
 torchvision>=0.29.2
