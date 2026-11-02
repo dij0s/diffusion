@@ -4,4 +4,16 @@ version = "0.1.0"
 description = "Diffusion model, implemented for 14X050@unige"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "marimo>=0.25.2",
+    "torch>=2.15.0",
+    "torchvision>=0.29.2",
+]
+
+[tool.uv]
+package = true
+
+[tool.basedpyright]
+venvPath = "."
+venv = ".venv"
+extraPaths = ["src"]

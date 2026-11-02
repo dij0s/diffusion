@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: diffusion
+Version: 0.1.0
+Summary: Diffusion model, implemented for 14X050@unige
+Requires-Python: >=3.14
+Description-Content-Type: text/markdown
+Requires-Dist: marimo>=0.25.2
+Requires-Dist: torch>=2.15.0
+Requires-Dist: torchvision>=0.29.2
