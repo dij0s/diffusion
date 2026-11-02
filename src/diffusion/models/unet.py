@@ -18,7 +18,7 @@ class Model(nn.Module):
         self.conv_out = nn.Conv2d(nb_channels, image_channels, kernel_size=3, padding=1)
 
     def forward(self, noisy_input: torch.Tensor, c_noise: torch.Tensor) -> torch.Tensor:
-        cond = self.noise_emb(c_noise) # TODO: not used yet
+        # cond = self.noise_emb(c_noise) # TODO: not used yet
         x = self.conv_in(noisy_input)
         for block in self.blocks:
             x = block(x)
@@ -32,6 +32,7 @@ class NoiseEmbedding(nn.Module):
         self.register_buffer('weight', torch.randn(1, cond_channels // 2))
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
+        print(input.shape)
         assert input.ndim == 1
         f = 2 * torch.pi * input.unsqueeze(1) @ self.weight
         return torch.cat([f.cos(), f.sin()], dim=-1)

@@ -2,7 +2,7 @@ Metadata-Version: 2.4
 Name: diffusion
 Version: 0.1.0
 Summary: Diffusion model, implemented for 14X050@unige
-Requires-Python: >=3.14
+Requires-Python: >=3.12
 Description-Content-Type: text/markdown
 Requires-Dist: basedpyright>=1.40.2
 Requires-Dist: marimo>=0.25.2
