@@ -5,8 +5,8 @@ import torch as T
 from torch import Tensor, nn
 from torch.utils.data import DataLoader
 
-from diffusion.helpers.loss import DenoisingLoss
 import wandb
+from diffusion.helpers.loss import DenoisingLoss
 
 
 def sample_sigma(
@@ -36,10 +36,12 @@ def sample_sigma(
 def train_model(
     model: nn.Module,
     train_loader: DataLoader,
+    valid_loader: DataLoader,
     sigma_data: Tensor,
     nb_epochs: int,
     eta: float,
     run: wandb.Run,
+    valid_loss_every: int = 100,
     device: Literal["gpu", "cpu"] = "cpu",
 ):
     """Train a model.
@@ -47,10 +49,12 @@ def train_model(
     Args:
         model (nn.Module): The model to train.
         train_loader (DataLoader): The train DataLoader.
+        valid_loader (DataLoader): The validation DataLoader.
         sigma_data (Tensor): The standard deviation of the data distribution.
         nb_epochs (int): The number of epochs to train the model for.
         eta (float): The learning rate.
         run (wandb.Run): The wandb-associated experiment run.
+        valid_loss_every (int): The interval at which the validation loss should be computed, and logged.
         device (Literal["gpu", "cpu"]): The device on which to perform Tensor operations. Defaults to "cpu".
 
     Raises:
@@ -62,6 +66,9 @@ def train_model(
     optimizer: T.optim.Optimizer = T.optim.SGD(model.parameters(), lr=eta)
 
     for e in range(nb_epochs):
+        loss_train: float = 0.0
+        compute_valid_loss: bool = e % valid_loss_every == 0
+
         # sample a batch of images
         for y, _ in iter(train_loader):
             y = y.to(device)
@@ -86,7 +93,45 @@ def train_model(
             if np.isnan(loss.item()):
                 raise Exception(f"Loss at step {e} is nan.")
             print(f"% loss@{e} {loss.item()}")
+            loss_train += loss.item()
 
             model.zero_grad()
             loss.backward()
             optimizer.step()
+
+        # compute average train
+        # loss across batches
+        average_loss_train: float = loss_train / len(train_loader)
+        run.log({"train/loss": average_loss_train}, step=e, commit=(not compute_valid_loss))
+
+        # compute validation loss
+        # on 20% of samples
+        if compute_valid_loss:
+            iterations: int = len(valid_loader) // 5
+            loss_valid: float = 0.0
+            iterator = iter(valid_loader)
+            with T.no_grad():
+                for _ in range(iterations):
+                    y_valid, _ = next(iterator)
+                    y_valid = y_valid.to(device)
+
+                    sigmas_valid: Tensor = sample_sigma(n=y_valid.shape[0]).to(device)
+                    sigmas_valid = sigmas_valid[:, None, None, None]
+                    # sample gaussian noise
+                    epsilons_valid: Tensor = T.randn_like(y_valid) * sigmas_valid
+                    # degrade image
+                    x_valid: Tensor = T.add(y_valid, epsilons_valid)
+
+                    # compute loss and
+                    # make backward pass
+                    loss_valid += criterion(  # pyright: ignore[reportAny]
+                        model=model,
+                        x=x_valid,
+                        sigma=sigmas_valid,
+                        y=y_valid
+                    ).item()
+
+            # log average loss
+            # on valid subset
+            average_loss_valid: float = loss_valid / iterations
+            run.log({"valid/loss": average_loss_valid}, step=e, commit=True)

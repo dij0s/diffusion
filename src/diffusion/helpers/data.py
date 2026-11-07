@@ -61,7 +61,11 @@ def make_dataloaders(
     collate_fn = default_collate if num_classes is not None else lambda batch: (default_collate(batch)[0], None)
     kwargs = {'collate_fn': collate_fn, 'num_workers': num_workers, 'persistent_workers': (num_workers > 0), 'pin_memory': pin_memory}
 
+    # shuffle validation batches
+    # as a way to have a better
+    # statistical estimation of
+    # the loss every n-th epoch
     return DataLoaders(
         train=DataLoader(train_dataset, batch_size=batch_size, shuffle=True, **kwargs),
-        valid=DataLoader(valid_dataset, batch_size=2 * batch_size, **kwargs)
+        valid=DataLoader(valid_dataset, batch_size=batch_size, shuffle=True, **kwargs)
     )

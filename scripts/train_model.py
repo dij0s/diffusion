@@ -1,4 +1,5 @@
 import argparse
+from functools import reduce
 from pathlib import Path
 
 import torch as T
@@ -26,19 +27,22 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
     )
     print(f"% dataset information {info}")
 
-    device: str = "gpu" if T.cuda.is_available() else "cpu"
+    device: str = "cuda" if T.cuda.is_available() else "cpu"
     print(f"% training on device '{device}'")
+    print(len(dataloaders.valid))
     train_model(
         model=UNet(  # pyright: ignore[reportCallIssue]
             image_channels=info.image_channels,
             **config["model"]  # pyright: ignore[reportCallIssue]
         ),
         train_loader=dataloaders.train,
+        valid_loader=dataloaders.valid,
         sigma_data=info.sigma_data,
         nb_epochs=1,
         eta=1e-4,
         run=run,
-        device=device
+        valid_loss_every=100,
+        device=device  # pyright: ignore[reportArgumentType]
     )
 
 if __name__ == "__main__":
@@ -53,12 +57,22 @@ if __name__ == "__main__":
     )
     if config is None:
         raise Exception(f"Configuration file at {args.yaml_configuration_filepath} can not be opened.")  # noqa: TRY002  # pyright: ignore[reportAny]
+    flat_config: dict[str, str] = reduce(  # pyright: ignore[reportUnknownVariableType]
+        lambda res, e: (  # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
+            {**res, **e[1]}
+            if isinstance(e[1], dict)
+            else {**res, e[0]: e[1]}
+        ),
+        config.items(),
+        {},  # pyright: ignore[reportUnknownArgumentType]
+    )
 
     _ = wandb.login()
     with wandb.init(
         entity="osd1-garden", project="diffusion",
-        config=config,
-        mode="online" if args.log else "disabled"  # pyright: ignore[reportAny]
+        config=flat_config,
+        mode="online" if args.log else "disabled",  # pyright: ignore[reportAny]
+        settings=wandb.Settings(x_disable_stats=True)
     ) as run:
         main(run, config)
 
