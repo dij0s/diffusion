@@ -92,7 +92,6 @@ def train_model(
             )
             if np.isnan(loss.item()):
                 raise Exception(f"Loss at step {e} is nan.")
-            print(f"% loss@{e} {loss.item()}")
             loss_train += loss.item()
 
             model.zero_grad()
@@ -102,7 +101,7 @@ def train_model(
         # compute average train
         # loss across batches
         average_loss_train: float = loss_train / len(train_loader)
-        run.log({"train/loss": average_loss_train}, step=e, commit=(not compute_valid_loss))
+        run.log({"train/loss": average_loss_train}, step=e+1, commit=(not compute_valid_loss))
 
         # compute validation loss
         # on 20% of samples
@@ -134,4 +133,4 @@ def train_model(
             # log average loss
             # on valid subset
             average_loss_valid: float = loss_valid / iterations
-            run.log({"valid/loss": average_loss_valid}, step=e, commit=True)
+            run.log({"valid/loss": average_loss_valid}, step=e+1, commit=True)

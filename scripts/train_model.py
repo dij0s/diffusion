@@ -29,7 +29,6 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
 
     device: str = "cuda" if T.cuda.is_available() else "cpu"
     print(f"% training on device '{device}'")
-    print(len(dataloaders.valid))
     train_model(
         model=UNet(  # pyright: ignore[reportCallIssue]
             image_channels=info.image_channels,
@@ -38,10 +37,10 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
         train_loader=dataloaders.train,
         valid_loader=dataloaders.valid,
         sigma_data=info.sigma_data,
-        nb_epochs=1,
-        eta=1e-4,
+        nb_epochs=config["nb_epochs"],  # pyright: ignore[reportArgumentType]
+        eta=float(config["eta"]),  # pyright: ignore[reportArgumentType]
         run=run,
-        valid_loss_every=100,
+        valid_loss_every=config["nb_epochs"] // 10,  # pyright: ignore[reportOperatorIssue, reportUnknownArgumentType]
         device=device  # pyright: ignore[reportArgumentType]
     )
 
