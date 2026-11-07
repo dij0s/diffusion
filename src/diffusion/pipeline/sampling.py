@@ -1,7 +1,10 @@
+from collections.abc import Callable
 from typing import Literal
 
 import torch as T
 from torch import Tensor, nn
+
+from diffusion.helpers.loss import c_in, c_noise, c_out, c_skip
 
 
 def build_sigma_schedule(
@@ -32,6 +35,7 @@ def build_sigma_schedule(
 
 def sample_model(
     model: nn.Module,
+    sigma_data: Tensor,
     n_samples: int,
     device: Literal["gpu", "cpu"] = "cpu",
 ) -> Tensor:
@@ -39,6 +43,7 @@ def sample_model(
 
     Args:
         model (nn.Module): The model to sample.
+        sigma_data (Tensor): The standard deviation of the data distribution.
         n_samples (int): The number of samples to generate.
         device (Literal["gpu", "cpu"]): The device on which to perform Tensor operations. Defaults to "cpu".
 
@@ -46,6 +51,10 @@ def sample_model(
         Tensor: The generated samples.
     """
     model = model.to(device)
+    D: Callable[[Tensor, Tensor], Tensor] = lambda x, sigma: (  # pyright: ignore[reportAny]
+        (c_skip(sigma_data, sigma) * x) +
+        (c_out(sigma_data, sigma) * model(c_in(sigma_data, sigma) * x, c_noise(sigma)))
+    )
 
     # create sequence of
     # decreasing sigmas
@@ -60,7 +69,7 @@ def sample_model(
     for i, sigma in enumerate(sigmas):
         x_denoised: Tensor | None = None
         with T.no_grad():
-            x_denoised = model(x, sigma)
+            x_denoised = D(x, sigma)
 
         sigma_next = sigmas[i + 1] if i < len(sigmas) - 1 else 0
         d: Tensor = (x - x_denoised) / sigma  # pyright: ignore[reportOperatorIssue]

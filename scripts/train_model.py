@@ -47,10 +47,11 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
         device=device  # pyright: ignore[reportArgumentType]
     )
 
-    print("% sampling model")
     n_samples: int = 8
+    print(f"% generating {n_samples} samples")
     samples: T.Tensor = sample_model(
         model=model,
+        sigma_data=info.sigma_data,
         n_samples=n_samples,
         device=device  # pyright: ignore[reportArgumentType]
     )

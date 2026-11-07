@@ -109,7 +109,7 @@ def train_model(
         # compute validation loss
         # on 20% of samples
         if compute_valid_loss:
-            print(f"computing valid loss@{e}")
+            print(f"% computing valid loss@{e}")
             iterations: int = len(valid_loader) // 5
             loss_valid: float = 0.0
             iterator = iter(valid_loader)
