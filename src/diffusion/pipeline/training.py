@@ -60,7 +60,7 @@ def train_model(
 
     for e in range(nb_epochs):
         # sample a batch of images
-        for y, target in iter(train_loader):
+        for y, _ in iter(train_loader):
             y = y.to(device)
 
             # sample noise levels
