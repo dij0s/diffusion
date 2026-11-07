@@ -8,4 +8,5 @@ src/diffusion/helpers/data.py
 src/diffusion/helpers/loss.py
 src/diffusion/models/__init__.py
 src/diffusion/models/unet.py
+src/diffusion/pipeline/sampling.py
 src/diffusion/pipeline/training.py

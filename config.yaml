@@ -4,5 +4,5 @@ model:
   cond_channels: 4
 
 batch_size: 32
-nb_epochs: 100
+nb_epochs: 20
 eta: 1e-4

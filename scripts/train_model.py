@@ -4,10 +4,13 @@ from pathlib import Path
 
 import torch as T
 import yaml
+from PIL import Image
+from torchvision.utils import make_grid
 
 import wandb
 from diffusion.helpers.data import load_dataset_and_make_dataloaders
 from diffusion.models import UNet
+from diffusion.pipeline.sampling import sample_model
 from diffusion.pipeline.training import train_model
 
 
@@ -29,7 +32,7 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
 
     device: str = "cuda" if T.cuda.is_available() else "cpu"
     print(f"% training on device '{device}'")
-    train_model(
+    model = train_model(
         model=UNet(  # pyright: ignore[reportCallIssue]
             image_channels=info.image_channels,
             **config["model"]  # pyright: ignore[reportCallIssue]
@@ -40,9 +43,21 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
         nb_epochs=config["nb_epochs"],  # pyright: ignore[reportArgumentType]
         eta=float(config["eta"]),  # pyright: ignore[reportArgumentType]
         run=run,
-        valid_loss_every=config["nb_epochs"] // 10,  # pyright: ignore[reportOperatorIssue, reportUnknownArgumentType]
+        valid_loss_every=max(config["nb_epochs"] // 10, 1),  # pyright: ignore[reportOperatorIssue, reportUnknownArgumentType]
         device=device  # pyright: ignore[reportArgumentType]
     )
+
+    print("% sampling model")
+    n_samples: int = 8
+    samples: T.Tensor = sample_model(
+        model=model,
+        n_samples=n_samples,
+        device=device  # pyright: ignore[reportArgumentType]
+    )
+    samples = samples.clamp(-1, 1).add(1).div(2).mul(255).byte()
+    samples = make_grid(samples)
+    memory: Image.Image = Image.fromarray(samples.permute(1, 2, 0).cpu().numpy())
+    run.log({"generated_samples": wandb.Image(memory)})
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -70,7 +85,7 @@ if __name__ == "__main__":
     with wandb.init(
         entity="osd1-garden", project="diffusion",
         config=flat_config,
-        mode="online" if args.log else "disabled",  # pyright: ignore[reportAny]
+        mode="online" if args.log else "offline",  # pyright: ignore[reportAny]
         settings=wandb.Settings(x_disable_stats=True)
     ) as run:
         main(run, config)

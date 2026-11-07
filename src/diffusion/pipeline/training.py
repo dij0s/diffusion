@@ -35,15 +35,15 @@ def sample_sigma(
 
 def train_model(
     model: nn.Module,
-    train_loader: DataLoader,
-    valid_loader: DataLoader,
+    train_loader: DataLoader,  # pyright: ignore[reportMissingTypeArgument]
+    valid_loader: DataLoader,  # pyright: ignore[reportMissingTypeArgument]
     sigma_data: Tensor,
     nb_epochs: int,
     eta: float,
     run: wandb.Run,
     valid_loss_every: int = 100,
     device: Literal["gpu", "cpu"] = "cpu",
-):
+) -> nn.Module:
     """Train a model.
 
     Args:
@@ -54,8 +54,11 @@ def train_model(
         nb_epochs (int): The number of epochs to train the model for.
         eta (float): The learning rate.
         run (wandb.Run): The wandb-associated experiment run.
-        valid_loss_every (int): The interval at which the validation loss should be computed, and logged.
+        valid_loss_every (int): The interval at which the validation loss should be computed, and logged. Defaults to 100.
         device (Literal["gpu", "cpu"]): The device on which to perform Tensor operations. Defaults to "cpu".
+
+    Returns:
+        nn.Module: The trained model.
 
     Raises:
         Exception: If loss is NaN.
@@ -106,6 +109,7 @@ def train_model(
         # compute validation loss
         # on 20% of samples
         if compute_valid_loss:
+            print(f"computing valid loss@{e}")
             iterations: int = len(valid_loader) // 5
             loss_valid: float = 0.0
             iterator = iter(valid_loader)
@@ -134,3 +138,5 @@ def train_model(
             # on valid subset
             average_loss_valid: float = loss_valid / iterations
             run.log({"valid/loss": average_loss_valid}, step=e+1, commit=True)
+
+    return model
