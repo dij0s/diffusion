@@ -6,6 +6,7 @@ from torch import Tensor, nn
 from torch.utils.data import DataLoader
 
 from diffusion.helpers.loss import DenoisingLoss
+import wandb
 
 
 def sample_sigma(
@@ -38,6 +39,7 @@ def train_model(
     sigma_data: Tensor,
     nb_epochs: int,
     eta: float,
+    run: wandb.Run,
     device: Literal["gpu", "cpu"] = "cpu",
 ):
     """Train a model.
@@ -48,6 +50,7 @@ def train_model(
         sigma_data (Tensor): The standard deviation of the data distribution.
         nb_epochs (int): The number of epochs to train the model for.
         eta (float): The learning rate.
+        run (wandb.Run): The wandb-associated experiment run.
         device (Literal["gpu", "cpu"]): The device on which to perform Tensor operations. Defaults to "cpu".
 
     Raises:

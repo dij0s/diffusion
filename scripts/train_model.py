@@ -1,33 +1,65 @@
-import torch as T
+import argparse
+from pathlib import Path
 
+import torch as T
+import yaml
+
+import wandb
 from diffusion.helpers.data import load_dataset_and_make_dataloaders
 from diffusion.models import UNet
 from diffusion.pipeline.training import train_model
 
-BATCH_SIZE: int = 8
 
-dataloaders, info = load_dataset_and_make_dataloaders(
-    dataset_name="FashionMNIST",
-    root_dir="data",
-    batch_size=BATCH_SIZE,
-    num_workers=4,
-    pin_memory=True
-)
-print(f"% dataset information {info}")
+def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
+    """Train and evaluate diffusion model.
 
-device: str = "cuda" if T.cuda.is_available() else "cpu"
-print(f"% training on device '{device}'")
+    Args:
+        run (wandb.Run): The wandb-associated experiment run.
+        config (dict[str, dict[str, str] | str]): The configuration of the experiment.
+    """
+    dataloaders, info = load_dataset_and_make_dataloaders(
+        dataset_name="FashionMNIST",
+        root_dir="data",
+        batch_size=config["batch_size"],  # pyright: ignore[reportArgumentType]
+        num_workers=4,
+        pin_memory=True
+    )
+    print(f"% dataset information {info}")
 
-train_model(
-    model=UNet(
-        image_channels=info.image_channels,
-        nb_channels=4,
-        num_blocks=4,
-        cond_channels=4
-    ),
-    train_loader=dataloaders.train,
-    sigma_data=info.sigma_data,
-    nb_epochs=1,
-    eta=1e-2,
-    device=device  # pyright: ignore[reportArgumentType]
-)
+    device: str = "gpu" if T.cuda.is_available() else "cpu"
+    print(f"% training on device '{device}'")
+    train_model(
+        model=UNet(  # pyright: ignore[reportCallIssue]
+            image_channels=info.image_channels,
+            **config["model"]  # pyright: ignore[reportCallIssue]
+        ),
+        train_loader=dataloaders.train,
+        sigma_data=info.sigma_data,
+        nb_epochs=1,
+        eta=1e-4,
+        run=run,
+        device=device
+    )
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    _ = parser.add_argument("yaml_configuration_filepath")
+    _ = parser.add_argument("--log", action="store_true")
+    args = parser.parse_args()
+
+    config: dict[str, dict[str, str] | str] | None = yaml.safe_load(  # pyright: ignore[reportAny]
+        Path(args.yaml_configuration_filepath)  # pyright: ignore[reportAny]
+            .read_text(encoding="utf-8")
+    )
+    if config is None:
+        raise Exception(f"Configuration file at {args.yaml_configuration_filepath} can not be opened.")  # noqa: TRY002  # pyright: ignore[reportAny]
+
+    _ = wandb.login()
+    with wandb.init(
+        entity="osd1-garden", project="diffusion",
+        config=config,
+        mode="online" if args.log else "disabled"  # pyright: ignore[reportAny]
+    ) as run:
+        main(run, config)
+
+        run.finish()
