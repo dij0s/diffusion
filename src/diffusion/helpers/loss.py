@@ -38,7 +38,7 @@ def c_skip(sigma_data: Tensor, sigma: Tensor) -> Tensor:
     Returns:
         Tensor: The skip connection coefficient.
     """
-    return T.pow(sigma_data, 2) / T.sqrt(T.pow(sigma_data, 2) + T.pow(sigma, 2))
+    return T.pow(sigma_data, 2) / (T.sqrt(T.pow(sigma_data, 2) + T.pow(sigma, 2)))
 
 def c_noise(sigma: Tensor) -> Tensor:
     """Transform noise level.
