@@ -1,5 +1,6 @@
 from typing import Literal
 
+import numpy as np
 import torch as T
 from torch import Tensor, nn
 from torch.utils.data import DataLoader
@@ -48,6 +49,9 @@ def train_model(
         nb_epochs (int): The number of epochs to train the model for.
         eta (float): The learning rate.
         device (Literal["gpu", "cpu"]): The device on which to perform Tensor operations. Defaults to "cpu".
+
+    Raises:
+        Exception: If loss is NaN.
     """
     model = model.to(device)
 
@@ -64,7 +68,7 @@ def train_model(
             sigmas: Tensor = sample_sigma(n=y.shape[0]).to(device)
             sigmas = sigmas[:, None, None, None]
             # sample gaussian noise
-            epsilons: Tensor = T.normal(T.zeros_like(y), T.ones_like(y) * sigmas)
+            epsilons: Tensor = T.randn_like(y) * sigmas
             # degrade image
             x: Tensor = T.add(y, epsilons)
 
@@ -76,6 +80,8 @@ def train_model(
                 sigma=sigmas,
                 y=y
             )
+            if np.isnan(loss.item()):
+                raise Exception(f"Loss at step {e} is nan.")
             print(f"% loss@{e} {loss.item()}")
 
             model.zero_grad()
