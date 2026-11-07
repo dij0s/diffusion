@@ -1,7 +1,9 @@
+from collections.abc import Callable
+from typing import override
+
 import torch as T
 import torch.nn.modules.loss as l
-from torch import nn
-from torch import Tensor
+from torch import Tensor, nn
 
 
 def c_in(sigma_data: Tensor, sigma: Tensor) -> Tensor:
@@ -60,14 +62,15 @@ class DenoisingLoss(l._Loss):  # pyright: ignore[reportPrivateUsage]
     def __init__(self, sigma_data: Tensor):
         super().__init__(size_average=None, reduce=None, reduction="mean")
 
-        # create lambda functions
-        # required to parametrize
-        # the denoising loss
-        self.c_in = lambda sigma: c_in(sigma_data, sigma)
-        self.c_out = lambda sigma: c_out(sigma_data, sigma)
-        self.c_skip = lambda sigma: c_skip(sigma_data, sigma)
-        self.c_noise = lambda sigma: c_noise(sigma)
+        # parametrize noise level
+        # function with data
+        # distribution st. dev.
+        self.c_in: Callable[[Tensor], Tensor] = lambda sigma: c_in(sigma_data, sigma)
+        self.c_out: Callable[[Tensor], Tensor] = lambda sigma: c_out(sigma_data, sigma)
+        self.c_skip: Callable[[Tensor], Tensor] = lambda sigma: c_skip(sigma_data, sigma)
+        self.c_noise: Callable[[Tensor], Tensor] = c_noise
 
+    @override
     def forward(self, model: nn.Module, x: Tensor, sigma: Tensor, y: Tensor) -> Tensor:
         """Run the forward pass.
 
