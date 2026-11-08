@@ -1,8 +1,8 @@
 model:
-  nb_channels: 4 
-  num_blocks: 32
+  nb_channels: 10
+  num_blocks: 12
   cond_channels: 4
 
-batch_size: 32
-nb_epochs: 200
+batch_size: 64
+nb_epochs: 20
 eta: 1e-4

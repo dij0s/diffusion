@@ -54,7 +54,6 @@ def sample_model(
     Returns:
         Tensor: The generated samples.
     """
-    sigma_data = sigma_data.to(device)
     model = model.to(device)
     _ = model.eval()
 
@@ -67,6 +66,7 @@ def sample_model(
         (c_out(sigma_data, sigma) * model(c_in(sigma_data, sigma) * x, c_noise(sigma)))
     )
 
+    sigma_data = sigma_data.to(device)
     # create sequence of
     # decreasing sigmas
     sigmas: Tensor = build_sigma_schedule(steps=50, rho=7).to(device)
@@ -74,8 +74,8 @@ def sample_model(
     # initialize with pure
     # normal noise, and generate
     # using sampled schedule
-    x: Tensor = T.randn(n_samples, image_channels, image_size, image_size) * sigmas[0]
-    x = x.to(device)
+    x: Tensor = T.randn(n_samples, image_channels, image_size, image_size).to(device)
+    x = x * sigmas[0]
 
     for i, sigma in enumerate(sigmas):
         x_denoised: Tensor | None = None
