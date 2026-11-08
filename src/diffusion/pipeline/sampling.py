@@ -37,6 +37,8 @@ def sample_model(
     model: nn.Module,
     sigma_data: Tensor,
     n_samples: int,
+    image_channels: int,
+    image_size: int,
     device: Literal["gpu", "cpu"] = "cpu",
 ) -> Tensor:
     """Sample a model, using Euler's method.
@@ -45,12 +47,21 @@ def sample_model(
         model (nn.Module): The model to sample.
         sigma_data (Tensor): The standard deviation of the data distribution.
         n_samples (int): The number of samples to generate.
+        image_channels (int): The number of channels of the image to generate.
+        image_size (int): The image size of the image to generate.
         device (Literal["gpu", "cpu"]): The device on which to perform Tensor operations. Defaults to "cpu".
 
     Returns:
         Tensor: The generated samples.
     """
+    sigma_data = sigma_data.to(device)
     model = model.to(device)
+    _ = model.eval()
+
+    # create sampling lambda
+    # function by composing
+    # noise level transforms
+    # and model output
     D: Callable[[Tensor, Tensor], Tensor] = lambda x, sigma: (  # pyright: ignore[reportAny]
         (c_skip(sigma_data, sigma) * x) +
         (c_out(sigma_data, sigma) * model(c_in(sigma_data, sigma) * x, c_noise(sigma)))
@@ -58,12 +69,12 @@ def sample_model(
 
     # create sequence of
     # decreasing sigmas
-    sigmas: Tensor = build_sigma_schedule(steps=50, rho=7)
+    sigmas: Tensor = build_sigma_schedule(steps=50, rho=7).to(device)
 
     # initialize with pure
     # normal noise, and generate
     # using sampled schedule
-    x: Tensor = T.randn(n_samples, 1, 32, 32) * sigmas[0]
+    x: Tensor = T.randn(n_samples, image_channels, image_size, image_size) * sigmas[0]
     x = x.to(device)
 
     for i, sigma in enumerate(sigmas):

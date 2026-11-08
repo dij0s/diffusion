@@ -53,6 +53,8 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
         model=model,
         sigma_data=info.sigma_data,
         n_samples=n_samples,
+        image_channels=info.image_channels,
+        image_size=info.image_size,
         device=device  # pyright: ignore[reportArgumentType]
     )
     samples = samples.clamp(-1, 1).add(1).div(2).mul(255).byte()

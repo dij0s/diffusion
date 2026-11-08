@@ -66,11 +66,11 @@ def train_model(
     model = model.to(device)
 
     criterion: DenoisingLoss = DenoisingLoss(sigma_data).to(device)
-    optimizer: T.optim.Optimizer = T.optim.SGD(model.parameters(), lr=eta)
+    optimizer: T.optim.Optimizer = T.optim.Adam(model.parameters(), lr=eta)
 
     for e in range(nb_epochs):
         loss_train: float = 0.0
-        compute_valid_loss: bool = e % valid_loss_every == 0
+        compute_valid_loss: bool = (e % valid_loss_every == 0) or (e == nb_epochs - 1)
 
         # sample a batch of images
         for y, _ in iter(train_loader):
@@ -93,9 +93,10 @@ def train_model(
                 sigma=sigmas,
                 y=y
             )
-            if np.isnan(loss.item()):
-                raise Exception(f"Loss at step {e} is nan.")
-            loss_train += loss.item()
+            batch_loss: float = loss.item()
+            if np.isnan(batch_loss):
+                raise Exception(f"Loss at step {e} is nan.")  # noqa: TRY002
+            loss_train += batch_loss
 
             model.zero_grad()
             loss.backward()
@@ -113,6 +114,10 @@ def train_model(
             iterations: int = len(valid_loader) // 5
             loss_valid: float = 0.0
             iterator = iter(valid_loader)
+
+            # avoid batch norm stats
+            # updated on valid data
+            _ = model.eval()
             with T.no_grad():
                 for _ in range(iterations):
                     y_valid, _ = next(iterator)
@@ -138,5 +143,7 @@ def train_model(
             # on valid subset
             average_loss_valid: float = loss_valid / iterations
             run.log({"valid/loss": average_loss_valid}, step=e+1, commit=True)
+
+            _ = model.train()
 
     return model
