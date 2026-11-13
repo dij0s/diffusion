@@ -9,7 +9,7 @@ from torchvision.utils import make_grid
 
 import wandb
 from diffusion.helpers.data import load_dataset_and_make_dataloaders
-from diffusion.models import UNet
+from diffusion.models import UNet, NoiseConditionedUNet
 from diffusion.pipeline.sampling import sample_model
 from diffusion.pipeline.training import train_model
 
@@ -33,7 +33,7 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
     device: str = "cuda" if T.cuda.is_available() else "cpu"
     print(f"% training on device '{device}'")
     model = train_model(
-        model=UNet(  # pyright: ignore[reportCallIssue]
+        model=NoiseConditionedUNet(  # pyright: ignore[reportCallIssue]
             image_channels=info.image_channels,
             **config["model"]  # pyright: ignore[reportCallIssue]
         ),
