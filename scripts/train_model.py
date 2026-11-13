@@ -9,7 +9,7 @@ from torchvision.utils import make_grid
 
 import wandb
 from diffusion.helpers.data import load_dataset_and_make_dataloaders
-from diffusion.models import UNet, NoiseConditionedUNet
+from diffusion.models import build_model
 from diffusion.pipeline.sampling import sample_model
 from diffusion.pipeline.training import train_model
 
@@ -31,12 +31,25 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
     print(f"% dataset information {info}")
 
     device: str = "cuda" if T.cuda.is_available() else "cpu"
+
+    model_config: dict[str, str] = dict(config["model"])  # pyright: ignore[reportCallIssue, reportAssignmentType, reportArgumentType]
+    model = build_model(model_config.pop("name"), image_channels=info.image_channels, **model_config)
+
+    # log model architecture
+    # and number of parameters
+    rows: list[list[str]] = [  # pyright: ignore[reportAssignmentType]
+        [name, type(m).__name__, sum(p.numel() for p in m.parameters(recurse=False)), repr(m)]
+        for name, m in model.named_modules()
+        if not any(m.children())
+    ]
+    run.log({"architecture": wandb.Table(columns=["layer", "type", "params", "repr"], data=rows)})
+
+    n_params: int = sum(p.numel() for p in model.parameters())
+    run.summary["model/n_params"] = n_params
+
     print(f"% training on device '{device}'")
     model = train_model(
-        model=NoiseConditionedUNet(  # pyright: ignore[reportCallIssue]
-            image_channels=info.image_channels,
-            **config["model"]  # pyright: ignore[reportCallIssue]
-        ),
+        model=model,
         train_loader=dataloaders.train,
         valid_loader=dataloaders.valid,
         sigma_data=info.sigma_data,
@@ -74,20 +87,12 @@ if __name__ == "__main__":
     )
     if config is None:
         raise Exception(f"Configuration file at {args.yaml_configuration_filepath} can not be opened.")  # noqa: TRY002  # pyright: ignore[reportAny]
-    flat_config: dict[str, str] = reduce(  # pyright: ignore[reportUnknownVariableType]
-        lambda res, e: (  # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
-            {**res, **e[1]}
-            if isinstance(e[1], dict)
-            else {**res, e[0]: e[1]}
-        ),
-        config.items(),
-        {},  # pyright: ignore[reportUnknownArgumentType]
-    )
 
     _ = wandb.login()
     with wandb.init(
         entity="osd1-garden", project="diffusion",
-        config=flat_config,
+        config=config,
+        tags=[config["model"]["name"]],  # pyright: ignore[reportArgumentType]
         mode="online" if args.log else "offline",  # pyright: ignore[reportAny]
         settings=wandb.Settings(x_disable_stats=True)
     ) as run:

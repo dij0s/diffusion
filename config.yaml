@@ -1,8 +1,9 @@
 model:
-  nb_channels: 10
-  num_blocks: 12
-  cond_channels: 4
+  name: noise_conditioned_unet
+  nb_channels: 1
+  num_blocks: 1
+  cond_channels: 2
 
 batch_size: 64
-nb_epochs: 20
+nb_epochs: 1
 eta: 1e-4
