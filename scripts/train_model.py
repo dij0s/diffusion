@@ -1,5 +1,4 @@
 import argparse
-from functools import reduce
 from pathlib import Path
 
 import torch as T
@@ -35,6 +34,10 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
     model_config: dict[str, str] = dict(config["model"])  # pyright: ignore[reportCallIssue, reportAssignmentType, reportArgumentType]
     model = build_model(model_config.pop("name"), image_channels=info.image_channels, **model_config)
 
+    # log optimizer
+    optimizer: T.optim.Optimizer = T.optim.Adam  # pyright: ignore[reportAssignmentType]
+    run.config.update({"optimizer": optimizer.__name__}, allow_val_change=False)  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+
     # log model architecture
     # and number of parameters
     rows: list[list[str]] = [  # pyright: ignore[reportAssignmentType]
@@ -50,12 +53,13 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
     print(f"% training on device '{device}'")
     model = train_model(
         model=model,
+        optimizer=optimizer,
         train_loader=dataloaders.train,
         valid_loader=dataloaders.valid,
         sigma_data=info.sigma_data,
         nb_epochs=config["nb_epochs"],  # pyright: ignore[reportArgumentType]
-        eta=float(config["eta"]),  # pyright: ignore[reportArgumentType]
         run=run,
+        optimizer_kwargs={"lr": float(config["eta"])},  # pyright: ignore[reportArgumentType]
         valid_loss_every=max(config["nb_epochs"] // 10, 1),  # pyright: ignore[reportOperatorIssue, reportUnknownArgumentType]
         device=device  # pyright: ignore[reportArgumentType]
     )

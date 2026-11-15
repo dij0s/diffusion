@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Any
 
 import numpy as np
 import torch as T
@@ -35,12 +35,13 @@ def sample_sigma(
 
 def train_model(
     model: nn.Module,
+    optimizer: T.optim.Optimizer,
     train_loader: DataLoader,  # pyright: ignore[reportMissingTypeArgument]
     valid_loader: DataLoader,  # pyright: ignore[reportMissingTypeArgument]
     sigma_data: Tensor,
     nb_epochs: int,
-    eta: float,
     run: wandb.Run,
+    optimizer_kwargs: dict[str, Any] = {},  # pyright: ignore[reportExplicitAny]
     valid_loss_every: int = 100,
     device: Literal["gpu", "cpu"] = "cpu",
 ) -> nn.Module:
@@ -48,12 +49,13 @@ def train_model(
 
     Args:
         model (nn.Module): The model to train.
+        optimizer (torch.optim.Optimizer): The optimizer to train the model with.
         train_loader (DataLoader): The train DataLoader.
         valid_loader (DataLoader): The validation DataLoader.
         sigma_data (Tensor): The standard deviation of the data distribution.
         nb_epochs (int): The number of epochs to train the model for.
-        eta (float): The learning rate.
         run (wandb.Run): The wandb-associated experiment run.
+        optimizer_kwargs (dict[str, Any]): The optimizer parameters.
         valid_loss_every (int): The interval at which the validation loss should be computed, and logged. Defaults to 100.
         device (Literal["gpu", "cpu"]): The device on which to perform Tensor operations. Defaults to "cpu".
 
@@ -66,7 +68,7 @@ def train_model(
     model = model.to(device)
 
     criterion: DenoisingLoss = DenoisingLoss(sigma_data).to(device)
-    optimizer: T.optim.Optimizer = T.optim.Adam(model.parameters(), lr=eta)
+    opt: T.optim.Optimizer = optimizer(model.parameters(), **optimizer_kwargs)  # pyright: ignore[reportCallIssue]
 
     for e in range(nb_epochs):
         loss_train: float = 0.0
@@ -100,7 +102,7 @@ def train_model(
 
             model.zero_grad()
             loss.backward()
-            optimizer.step()
+            opt.step()
 
         # compute average train
         # loss across batches
