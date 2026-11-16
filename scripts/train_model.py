@@ -8,6 +8,7 @@ from torchvision.utils import make_grid
 
 import wandb
 from diffusion.helpers.data import load_dataset_and_make_dataloaders
+from diffusion.helpers.fid import compute_fid
 from diffusion.models import build_model
 from diffusion.pipeline.sampling import sample_model
 from diffusion.pipeline.training import train_model
@@ -63,6 +64,19 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
         valid_loss_every=max(config["nb_epochs"] // 10, 1),  # pyright: ignore[reportOperatorIssue, reportUnknownArgumentType]
         device=device  # pyright: ignore[reportArgumentType]
     )
+
+    fid_n_samples: int = 2000
+    print(f"% computing fid on {fid_n_samples} samples")
+    fid_score = compute_fid(
+        model=model,
+        sigma_data=info.sigma_data,
+        loader=dataloaders.valid,
+        image_channels=info.image_channels,
+        image_size=info.image_size,
+        n_samples=fid_n_samples,
+        device=device,  # pyright: ignore[reportArgumentType]
+    )
+    run.log({"fid": fid_score})
 
     n_samples: int = 8
     print(f"% generating {n_samples} samples")

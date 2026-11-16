@@ -5,8 +5,10 @@ src/diffusion.egg-info/dependency_links.txt
 src/diffusion.egg-info/requires.txt
 src/diffusion.egg-info/top_level.txt
 src/diffusion/helpers/data.py
+src/diffusion/helpers/fid.py
 src/diffusion/helpers/loss.py
 src/diffusion/models/__init__.py
+src/diffusion/models/noise_conditioned_unet.py
 src/diffusion/models/unet.py
 src/diffusion/pipeline/sampling.py
 src/diffusion/pipeline/training.py
