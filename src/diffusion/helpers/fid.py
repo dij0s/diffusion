@@ -41,7 +41,7 @@ def compute_fid(
         image_channels (int): The number of channels of the generated images.
         image_size (int): The height and width of the generated images.
         n_samples (int): The number of real and generated images used to estimate the statistics. Defaults to 64.
-        batch_size (int): The number of images generated at once. Defaults to 500.
+        batch_size (int): The number of images generated at once. Defaults to 64.
         device (Literal["gpu", "cpu"]): The device on which to perform Tensor operations. Defaults to "cpu".
 
     Returns:
