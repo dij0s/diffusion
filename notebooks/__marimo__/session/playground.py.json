@@ -1,0 +1,172 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.25.2",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ISPj",
+      "code_hash": "1a5ac68250d645ef07a82949a4170191",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Dlaa",
+      "code_hash": "d0e7fc2cd14f2354b329c80d8d299227",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MHOq",
+      "code_hash": "090d48bee9efcd12c6dff179356b10b9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "HtSg",
+      "code_hash": "995b0a6b7f47e5cfb314815d660a0a97",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "dziF",
+      "code_hash": "a6e79899b908a3311c9fb734b487616c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"diffusion-playground\">Diffusion playground</h1>\n<span class=\"paragraph\">This notebook allows for a deeper understanding of diffusion models, produced in the context of this project.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYac",
+      "code_hash": "e5a75e7eb1cb4e440f84707315800137",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "oXnV",
+      "code_hash": "7d3fa8a4369cabb8abf8e58d061bf10a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "grUd",
+      "code_hash": "f40ce146d2e6f77c92cc835cbcf8265b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "sAKm",
+      "code_hash": "acbc6f029e084859a16ea2db8b4ccebd",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='sAKm-0' random-id='d2e78fc4-4758-c8a7-dcc4-2a5a9fa27896'><marimo-file-browser data-initial-value='[]' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eSelect model checkpoint.&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-initial-path='&quot;/home/osd/dev/unige/14x050/diffusion/checkpoints&quot;' data-selection-mode='&quot;file&quot;' data-filetypes='[]' data-multiple='false' data-restrict-navigation='true'></marimo-file-browser></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "% loaded model parameters at /home/osd/dev/unige/14x050/diffusion/checkpoints/bjh67pfg.pt\nModel(\n  (noise_emb): NoiseEmbedding()\n  (conv_in): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n  (blocks): ModuleList(\n    (0): ResidualBlock(\n      (affine1): Linear(in_features=2, out_features=2, bias=True)\n      (norm1): BatchNorm2d(1, eps=1e-05, momentum=0.1, affine=False, bias=False, track_running_stats=True)\n      (conv1): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n      (affine2): Linear(in_features=2, out_features=2, bias=True)\n      (norm2): BatchNorm2d(1, eps=1e-05, momentum=0.1, affine=False, bias=False, track_running_stats=True)\n      (conv2): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n    )\n  )\n  (conv_out): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n)\n% loaded model parameters at /home/osd/dev/unige/14x050/diffusion/checkpoints/h7b5r6p9.pt\nModel(\n  (noise_emb): NoiseEmbedding()\n  (conv_in): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n  (blocks): ModuleList(\n    (0): ResidualBlock(\n      (affine1): Linear(in_features=2, out_features=2, bias=True)\n      (norm1): BatchNorm2d(1, eps=1e-05, momentum=0.1, affine=False, bias=False, track_running_stats=True)\n      (conv1): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n      (affine2): Linear(in_features=2, out_features=2, bias=True)\n      (norm2): BatchNorm2d(1, eps=1e-05, momentum=0.1, affine=False, bias=False, track_running_stats=True)\n      (conv2): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n    )\n  )\n  (conv_out): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n)\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Axxy",
+      "code_hash": "0a238eba9cd56a34f18a1d0340a08934",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Now that the model parameters are loaded, we can play around!</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "tvDF",
+      "code_hash": "40f96caf050183990444d89f7a7a34d8",
+      "outputs": [],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "% sampled 5 images in 0.048s, on cuda\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    }
+  ]
+}
