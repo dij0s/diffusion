@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Literal
 
 import torch as T
@@ -30,6 +31,7 @@ def compute_fid(
     image_size: int,
     n_samples: int = 2000,
     batch_size: int = 64,
+    step_fn: Callable[[Tensor, Callable[[Tensor, Tensor | int], Tensor], tuple[Tensor, Tensor]], Tensor] = euler_sample,
     device: Literal["gpu", "cpu"] = "cpu",
 ) -> float:
     """Compute the FID between generated and real images.
@@ -42,6 +44,7 @@ def compute_fid(
         image_size (int): The height and width of the generated images.
         n_samples (int): The number of real and generated images used to estimate the statistics. Defaults to 64.
         batch_size (int): The number of images generated at once. Defaults to 64.
+        step_fn (Callable[[Tensor, Callable[[Tensor, Tensor | int], Tensor], tuple[Tensor, Tensor]], Tensor]): The denoising step function. Defaults to Euler's method.
         device (Literal["gpu", "cpu"]): The device on which to perform Tensor operations. Defaults to "cpu".
 
     Returns:
@@ -55,7 +58,7 @@ def compute_fid(
     # generated statistics
     seen: int = 0
     for y, _ in iter(loader):
-        fid.update(to_uint8_rgb(y.to(device)), real=True)
+        fid.update(to_uint8_rgb(y.to(device)), real=True)  # pyright: ignore[reportAny]
         seen += y.shape[0]
         if seen >= n_samples:
             break
@@ -69,6 +72,7 @@ def compute_fid(
             n_samples=b,
             image_channels=image_channels,
             image_size=image_size,
+            step_fn=step_fn,
             device=device,
         )
         fid.update(to_uint8_rgb(x), real=False)

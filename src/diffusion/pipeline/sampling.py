@@ -33,15 +33,79 @@ def build_sigma_schedule(
         T.linspace(0, 1, steps) * (min_inv_rho - max_inv_rho)
     ) ** rho
 
+def euler_sample(
+    x: Tensor,
+    D: Callable[[Tensor, Tensor | int], Tensor],
+    sigmas: tuple[Tensor, Tensor],
+) -> Tensor:
+    """Perform one step of Euler's method.
+
+    Args:
+        x (Tensor): The noised samples.
+        D (Callable[[Tensor, Tensor | int], Tensor]): The denoising function.
+        sigmas (tuple[Tensor, Tensor]): The tuple of contiguous sigmas to denoise the image with.
+
+    Returns:
+        Tensor: The denoised samples.
+    """
+    x_denoised: Tensor | None = None
+    sigma, sigma_next = sigmas
+
+    with T.no_grad():
+        x_denoised = D(x, sigma)
+
+        d: Tensor = (x - x_denoised) / sigma
+        return (
+            x + d * (sigma_next - sigma)
+        )
+
+def heun_sample(
+    x: Tensor,
+    D: Callable[[Tensor, Tensor | int], Tensor],
+    sigmas: tuple[Tensor, Tensor],
+) -> Tensor:
+    """Perform one step of Heun's 2nd order method.
+
+    Args:
+        x (Tensor): The noised samples.
+        D (Callable[[Tensor, Tensor | int], Tensor]): The denoising function.
+        sigmas (tuple[Tensor, Tensor]): The tuple of contiguous sigmas to denoise the image with.
+
+    Returns:
+        Tensor: The denoised samples.
+    """
+    sigma, sigma_next = sigmas
+
+    with T.no_grad():
+        # slope at current
+        # noise level given
+        # euler's step
+        d: Tensor = (x - D(x, sigma)) / sigma
+        x_euler: Tensor = x + d * (sigma_next - sigma)
+
+        # fallback to euler
+        # when last step goes
+        # to sigma=0 as no
+        # slope is defined
+        if sigma_next == 0:
+            return x_euler
+
+        # 2nd order correction
+        # using trapezoidal rule
+        d_next: Tensor = (x_euler - D(x_euler, sigma_next)) / sigma_next
+        return x + (sigma_next - sigma) * (d + d_next) / 2
+
 def sample_model(
     model: nn.Module,
     sigma_data: Tensor,
     n_samples: int,
     image_channels: int,
     image_size: int,
+    step_fn: Callable[[Tensor, Callable[[Tensor, Tensor | int], Tensor], tuple[Tensor, Tensor]], Tensor] = euler_sample,
+    denoising_steps: int = 50,
     device: Literal["gpu", "cpu"] = "cpu",
 ) -> Tensor:
-    """Sample a model, using Euler's method.
+    """Sample a model.
 
     Args:
         model (nn.Module): The model to sample.
@@ -49,6 +113,8 @@ def sample_model(
         n_samples (int): The number of samples to generate.
         image_channels (int): The number of channels of the image to generate.
         image_size (int): The image size of the image to generate.
+        step_fn (Callable[[Tensor, Callable[[Tensor, Tensor | int], Tensor], tuple[Tensor, Tensor]], Tensor]): The denoising step function. Defaults to Euler's method.
+        denoising_steps (int): The number of denoising steps. Defaults to 50.
         device (Literal["gpu", "cpu"]): The device on which to perform Tensor operations. Defaults to "cpu".
 
     Returns:
@@ -69,7 +135,7 @@ def sample_model(
     sigma_data = sigma_data.to(device)
     # create sequence of
     # decreasing sigmas
-    sigmas: Tensor = build_sigma_schedule(steps=50, rho=7).to(device)
+    sigmas: Tensor = build_sigma_schedule(steps=denoising_steps, rho=7).to(device)
 
     # initialize with pure
     # normal noise, and generate
@@ -78,14 +144,7 @@ def sample_model(
     x = x * sigmas[0]
 
     for i, sigma in enumerate(sigmas):
-        x_denoised: Tensor | None = None
-        with T.no_grad():
-            x_denoised = D(x, sigma)
-
         sigma_next = sigmas[i + 1] if i < len(sigmas) - 1 else 0
-        d: Tensor = (x - x_denoised) / sigma  # pyright: ignore[reportOperatorIssue]
-        x = (
-            x + d * (sigma_next - sigma)
-        )
+        x = step_fn(x, D, (sigma, sigma_next))  # pyright: ignore[reportArgumentType]
 
     return x
