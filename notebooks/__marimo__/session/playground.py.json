@@ -19,7 +19,7 @@
       "console": []
     },
     {
-      "id": "ISPj",
+      "id": "MJUe",
       "code_hash": "1a5ac68250d645ef07a82949a4170191",
       "outputs": [
         {
@@ -32,8 +32,8 @@
       "console": []
     },
     {
-      "id": "Dlaa",
-      "code_hash": "d0e7fc2cd14f2354b329c80d8d299227",
+      "id": "vblA",
+      "code_hash": "ffd2271922d4bfd9cc399fc04c3d05b4",
       "outputs": [
         {
           "type": "data",
@@ -45,7 +45,7 @@
       "console": []
     },
     {
-      "id": "MHOq",
+      "id": "bkHC",
       "code_hash": "090d48bee9efcd12c6dff179356b10b9",
       "outputs": [
         {
@@ -58,8 +58,8 @@
       "console": []
     },
     {
-      "id": "HtSg",
-      "code_hash": "995b0a6b7f47e5cfb314815d660a0a97",
+      "id": "lEQa",
+      "code_hash": "273207858edcd92dba64adc0e60bf231",
       "outputs": [
         {
           "type": "data",
@@ -71,7 +71,7 @@
       "console": []
     },
     {
-      "id": "dziF",
+      "id": "PKri",
       "code_hash": "a6e79899b908a3311c9fb734b487616c",
       "outputs": [
         {
@@ -84,7 +84,7 @@
       "console": []
     },
     {
-      "id": "BYac",
+      "id": "Xref",
       "code_hash": "e5a75e7eb1cb4e440f84707315800137",
       "outputs": [
         {
@@ -97,8 +97,8 @@
       "console": []
     },
     {
-      "id": "oXnV",
-      "code_hash": "7d3fa8a4369cabb8abf8e58d061bf10a",
+      "id": "SFPL",
+      "code_hash": "8f50d2b9bbc155f151f723f2e99c9a0c",
       "outputs": [
         {
           "type": "data",
@@ -110,7 +110,7 @@
       "console": []
     },
     {
-      "id": "grUd",
+      "id": "BYtC",
       "code_hash": "f40ce146d2e6f77c92cc835cbcf8265b",
       "outputs": [
         {
@@ -123,13 +123,13 @@
       "console": []
     },
     {
-      "id": "sAKm",
+      "id": "RGSE",
       "code_hash": "acbc6f029e084859a16ea2db8b4ccebd",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/html": "<marimo-ui-element object-id='sAKm-0' random-id='d2e78fc4-4758-c8a7-dcc4-2a5a9fa27896'><marimo-file-browser data-initial-value='[]' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eSelect model checkpoint.&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-initial-path='&quot;/home/osd/dev/unige/14x050/diffusion/checkpoints&quot;' data-selection-mode='&quot;file&quot;' data-filetypes='[]' data-multiple='false' data-restrict-navigation='true'></marimo-file-browser></marimo-ui-element>"
+            "text/html": "<marimo-ui-element object-id='RGSE-0' random-id='9ed015cd-f16f-cc1a-5edf-82fbb90e4d84'><marimo-file-browser data-initial-value='[]' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eSelect model checkpoint.&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-initial-path='&quot;/home/osd/dev/unige/14x050/diffusion/checkpoints&quot;' data-selection-mode='&quot;file&quot;' data-filetypes='[]' data-multiple='false' data-restrict-navigation='true'></marimo-file-browser></marimo-ui-element>"
           }
         }
       ],
@@ -137,13 +137,13 @@
         {
           "type": "stream",
           "name": "stdout",
-          "text": "% loaded model parameters at /home/osd/dev/unige/14x050/diffusion/checkpoints/bjh67pfg.pt\nModel(\n  (noise_emb): NoiseEmbedding()\n  (conv_in): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n  (blocks): ModuleList(\n    (0): ResidualBlock(\n      (affine1): Linear(in_features=2, out_features=2, bias=True)\n      (norm1): BatchNorm2d(1, eps=1e-05, momentum=0.1, affine=False, bias=False, track_running_stats=True)\n      (conv1): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n      (affine2): Linear(in_features=2, out_features=2, bias=True)\n      (norm2): BatchNorm2d(1, eps=1e-05, momentum=0.1, affine=False, bias=False, track_running_stats=True)\n      (conv2): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n    )\n  )\n  (conv_out): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n)\n% loaded model parameters at /home/osd/dev/unige/14x050/diffusion/checkpoints/h7b5r6p9.pt\nModel(\n  (noise_emb): NoiseEmbedding()\n  (conv_in): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n  (blocks): ModuleList(\n    (0): ResidualBlock(\n      (affine1): Linear(in_features=2, out_features=2, bias=True)\n      (norm1): BatchNorm2d(1, eps=1e-05, momentum=0.1, affine=False, bias=False, track_running_stats=True)\n      (conv1): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n      (affine2): Linear(in_features=2, out_features=2, bias=True)\n      (norm2): BatchNorm2d(1, eps=1e-05, momentum=0.1, affine=False, bias=False, track_running_stats=True)\n      (conv2): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n    )\n  )\n  (conv_out): Conv2d(1, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n)\n",
+          "text": "% loaded model parameters at /home/osd/dev/unige/14x050/diffusion/checkpoints/j9wt25pd.pt\nModel(\n  (noise_emb): NoiseEmbedding()\n  (conv_in): Conv2d(1, 12, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n  (blocks): ModuleList(\n    (0-11): 12 x ResidualBlock(\n      (affine1): Linear(in_features=20, out_features=24, bias=True)\n      (norm1): BatchNorm2d(12, eps=1e-05, momentum=0.1, affine=False, bias=False, track_running_stats=True)\n      (conv1): Conv2d(12, 12, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n      (affine2): Linear(in_features=20, out_features=24, bias=True)\n      (norm2): BatchNorm2d(12, eps=1e-05, momentum=0.1, affine=False, bias=False, track_running_stats=True)\n      (conv2): Conv2d(12, 12, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n    )\n  )\n  (conv_out): Conv2d(12, 1, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n)\n",
           "mimetype": "text/plain"
         }
       ]
     },
     {
-      "id": "Axxy",
+      "id": "Kclp",
       "code_hash": "0a238eba9cd56a34f18a1d0340a08934",
       "outputs": [
         {
@@ -156,17 +156,62 @@
       "console": []
     },
     {
-      "id": "tvDF",
-      "code_hash": "40f96caf050183990444d89f7a7a34d8",
-      "outputs": [],
-      "console": [
+      "id": "emfo",
+      "code_hash": "6598b96943e06393af458fc209c57cf0",
+      "outputs": [
         {
-          "type": "stream",
-          "name": "stdout",
-          "text": "% sampled 5 images in 0.048s, on cuda\n",
-          "mimetype": "text/plain"
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
         }
-      ]
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "e7e43c56d26b7cf2802ebc92bf875252",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: row;justify-content: space-between;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='Hstk-0' random-id='f28a86a2-4b59-6b83-f55f-c88539af386f'><marimo-number data-initial-value='20' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eNumber of sampling steps&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-start='10' data-stop='100' data-step='10' data-debounce='false' data-full-width='false' data-disabled='false'></marimo-number></marimo-ui-element><marimo-ui-element object-id='Hstk-1' random-id='9ab7274b-930b-a535-b731-2c8a2b6c5b98'><marimo-number data-initial-value='42' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eSeed number&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-start='0' data-stop='10000' data-debounce='false' data-full-width='false' data-disabled='false'></marimo-number></marimo-ui-element></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "71128c08030298741e207e605f8f4f68",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Gfjf",
+      "code_hash": "e298549bad177c00a6c096ddc272913a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "b2e2fcda3c23327b3cc5db434db74982",
+      "outputs": [],
+      "console": []
     }
   ]
 }

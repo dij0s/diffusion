@@ -6,7 +6,7 @@ from torch import Tensor, nn
 from torch.utils.data import DataLoader
 from torchmetrics.image.fid import FrechetInceptionDistance
 
-from diffusion.pipeline.sampling import sample_model
+from diffusion.pipeline.sampling import euler_sample, sample_model
 
 
 def to_uint8_rgb(x: Tensor) -> Tensor:
@@ -66,7 +66,7 @@ def compute_fid(
     generated: int = 0
     while generated < n_samples:
         b: int = min(batch_size, n_samples - generated)
-        x: Tensor = sample_model(
+        x: Tensor = sample_model(  # pyright: ignore[reportAssignmentType]
             model=model,
             sigma_data=sigma_data,
             n_samples=b,

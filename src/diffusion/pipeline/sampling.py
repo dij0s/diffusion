@@ -104,7 +104,11 @@ def sample_model(
     step_fn: Callable[[Tensor, Callable[[Tensor, Tensor | int], Tensor], tuple[Tensor, Tensor]], Tensor] = euler_sample,
     denoising_steps: int = 50,
     device: Literal["gpu", "cpu"] = "cpu",
-) -> Tensor:
+    x_init: Tensor | None = None,
+    sigmas: Tensor | None = None,
+    generator: T.Generator | None = None,
+    return_trajectory: bool = False
+) -> Tensor | tuple[Tensor, list[Tensor]]:
     """Sample a model.
 
     Args:
@@ -116,6 +120,10 @@ def sample_model(
         step_fn (Callable[[Tensor, Callable[[Tensor, Tensor | int], Tensor], tuple[Tensor, Tensor]], Tensor]): The denoising step function. Defaults to Euler's method.
         denoising_steps (int): The number of denoising steps. Defaults to 50.
         device (Literal["gpu", "cpu"]): The device on which to perform Tensor operations. Defaults to "cpu".
+        x_init (Tensor | None): The initial noised samples. If None, sampled from gaussian of maximal noise level.
+        sigmas: (Tensor | None): The sigma schedule. If None, generated from `build_sigma_schedule(steps=denoising_steps, rho=7)`.
+        generator: (T.Generator | None): The random number generator. Defaults to None.
+        return_trajectory (bool): Wether to return the sampling trajectory. Defaults to False.
 
     Returns:
         Tensor: The generated samples.
@@ -135,16 +143,20 @@ def sample_model(
     sigma_data = sigma_data.to(device)
     # create sequence of
     # decreasing sigmas
-    sigmas: Tensor = build_sigma_schedule(steps=denoising_steps, rho=7).to(device)
+    sigmas_schedule: Tensor = build_sigma_schedule(steps=denoising_steps, rho=7).to(device) if sigmas is None else sigmas.to(device)
 
     # initialize with pure
     # normal noise, and generate
     # using sampled schedule
-    x: Tensor = T.randn(n_samples, image_channels, image_size, image_size).to(device)
-    x = x * sigmas[0]
+    if x_init is None:
+        x = T.randn(n_samples, image_channels, image_size, image_size, generator=generator).to(device) * sigmas_schedule[0]
+    else:
+        x = x_init.to(device)
 
-    for i, sigma in enumerate(sigmas):
-        sigma_next = sigmas[i + 1] if i < len(sigmas) - 1 else 0
+    trajectory: list[Tensor] = [x]
+    for i, sigma in enumerate(sigmas_schedule):
+        sigma_next = sigmas_schedule[i + 1] if i < len(sigmas_schedule) - 1 else 0
         x = step_fn(x, D, (sigma, sigma_next))  # pyright: ignore[reportArgumentType]
+        trajectory.append(x)
 
-    return x
+    return (x, trajectory) if return_trajectory else x

@@ -15,15 +15,16 @@ def _():
 def _():
     from time import perf_counter
 
-    return (perf_counter,)
+    return
 
 
 @app.cell
 def _():
     import torch as T
     from torch import nn
+    from torch import Tensor
 
-    return T, nn
+    return T, Tensor, nn
 
 
 @app.cell
@@ -38,10 +39,18 @@ def _():
 def _():
     from diffusion.helpers.data import load_dataset_and_make_dataloaders
     from diffusion.models import NoiseConditionedUNet
-    from diffusion.pipeline.sampling import sample_model
+    from diffusion.pipeline.sampling import (
+        sample_model,
+        build_sigma_schedule,
+        euler_sample,
+        heun_sample,
+    )
 
     return (
         NoiseConditionedUNet,
+        build_sigma_schedule,
+        euler_sample,
+        heun_sample,
         load_dataset_and_make_dataloaders,
         sample_model,
     )
@@ -76,7 +85,7 @@ def _(NoiseConditionedUNet, T, info, nn):
         """Load model from checkpoint filepath, in inference mode."""
 
         model: nn.Module = NoiseConditionedUNet(
-            image_channels=info.image_channels, nb_channels=1, num_blocks=1, cond_channels=2
+            image_channels=info.image_channels, nb_channels=12, num_blocks=12, cond_channels=20
         )
         model.load_state_dict(T.load(filepath, weights_only=True))
         print(f"% loaded model parameters at {filepath}")
@@ -114,34 +123,115 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
+def _(mo):
+    get_step, set_step = mo.state(0)
+    return get_step, set_step
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    n_steps = mo.ui.number(10, 100, 10, value=20, label="Number of sampling steps")
+    seed = mo.ui.number(0, 10_000, value=42, label="Seed number")
+    mo.hstack([n_steps, seed])
+    return n_steps, seed
+
+
+@app.cell(hide_code=True)
+def _(
+    T,
+    Tensor,
+    build_sigma_schedule,
+    device: str,
+    euler_sample,
+    get_model,
+    heun_sample,
+    info,
+    mo,
+    n_steps,
+    sample_model,
+    seed,
+    set_step,
+):
+    _model = get_model()
+    mo.stop(_model is None, mo.md("Must load a checkpoint first."))
+
+    _sigmas: Tensor = build_sigma_schedule(n_steps.value)
+    _g: T.Generator = T.Generator().manual_seed(seed.value)
+    _x_init: Tensor = (
+        T.randn(5, info.image_channels, info.image_size, info.image_size, generator=_g)
+        * _sigmas[0]
+    )
+
+    _common = dict(
+        model=_model,
+        sigma_data=info.sigma_data,
+        n_samples=5,
+        image_channels=info.image_channels,
+        image_size=info.image_size,
+        denoising_steps=n_steps.value,
+        x_init=_x_init,
+        return_trajectory=True,
+        device=device,
+    )
+    _, traj_euler = sample_model(step_fn=euler_sample, **_common)
+    _, traj_heun = sample_model(step_fn=heun_sample, **_common)
+    sigmas = _sigmas
+    set_step(0)
+    return sigmas, traj_euler, traj_heun
+
+
+@app.cell(hide_code=True)
+def _(mo, n_steps, set_step):
+    next_btn: mo.ui.button = mo.ui.button(
+        label="Next", on_click=lambda _: set_step(lambda s: min(s + 1, n_steps.value))
+    )
+    prev_btn: mo.ui.button = mo.ui.button(
+        label="Previous", on_click=lambda _: set_step(lambda s: max(s - 1, 0))
+    )
+    reset_btn: mo.ui.button = mo.ui.button(label="Reset", on_click=lambda _: set_step(0))
+    return next_btn, prev_btn, reset_btn
+
+
+@app.cell(hide_code=True)
 def _(
     Image,
     T,
-    device: str,
-    get_model,
-    info,
+    get_step,
     make_grid,
     mo,
-    perf_counter,
-    sample_model,
+    n_steps,
+    next_btn: "mo.ui.button",
+    prev_btn: "mo.ui.button",
+    reset_btn: "mo.ui.button",
+    sigmas,
+    traj_euler,
+    traj_heun,
 ):
-    start: float = perf_counter()
-    n_samples: int = 5
-    samples: T.Tensor = sample_model(
-        model=get_model(),
-        sigma_data=info.sigma_data,
-        n_samples=n_samples,
-        image_channels=info.image_channels,
-        image_size=info.image_size,
-        device=device,
-    )
-    elapsed: float = perf_counter() - start
-    print(f"% sampled {n_samples} images in {elapsed:.3f}s, on {device}")
+    def to_image(x: T.Tensor) -> Image.Image:
+        x = x.clamp(-1, 1).add(1).div(2).mul(255).byte().cpu()
+        return Image.fromarray(make_grid(x, nrow=x.shape[0]).permute(1, 2, 0).numpy())
 
-    samples = samples.clamp(-1, 1).add(1).div(2).mul(255).byte()
-    samples = make_grid(samples)
-    memory: Image.Image = Image.fromarray(samples.permute(1, 2, 0).cpu().numpy())
-    mo.center(mo.image(memory, width="50vw"))
+    _n = n_steps.value
+    _step = min(get_step(), _n)
+    _sigma = sigmas[_step].item() if _step < _n else 0.0
+    _nfe_heun = max(2 * _step - (1 if _step == _n else 0), 0)
+
+    mo.vstack(
+        [
+            mo.hstack([prev_btn, next_btn, reset_btn], justify="start"),
+            mo.md(f"% step {_step}/{_n}"),
+            mo.center(
+                mo.vstack(
+                    [
+                        mo.md(f"% Euler"),
+                        mo.image(to_image(traj_euler[_step]), width="80vw"),
+                        mo.md(f"% Heun"),
+                        mo.image(to_image(traj_heun[_step]), width="80vw"),
+                    ]
+                )
+            ),
+        ]
+    )
     return
 
 
