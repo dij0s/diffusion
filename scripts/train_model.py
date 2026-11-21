@@ -93,6 +93,16 @@ def main(run: wandb.Run, config: dict[str, dict[str, str] | str]):
     memory: Image.Image = Image.fromarray(samples.permute(1, 2, 0).cpu().numpy())
     run.log({"generated_samples": wandb.Image(memory)})
 
+    print("% serializing model")
+    checkpoint_filepath: str = f"checkpoints/{run.id}.pt"
+    T.save(model.state_dict(), checkpoint_filepath)
+    checkpoint_artifact: wandb.Artifact = wandb.Artifact(
+        name="checkpoint",
+        type="model"
+    )
+    _ = checkpoint_artifact.add_file(checkpoint_filepath, name=f"{run.id}.pt")
+    _ = wandb.log_artifact(checkpoint_artifact)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     _ = parser.add_argument("yaml_configuration_filepath")
